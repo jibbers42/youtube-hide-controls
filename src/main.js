@@ -31,8 +31,7 @@ function showControls() {
     Timer = null
   }
 
-  document.getElementById('movie_player')
-    .classList.remove('ytp-autohide');
+  MoviePlayer.classList.remove('ytp-autohide');
 }
 
 function hideControls() {
@@ -42,8 +41,7 @@ function hideControls() {
   }
 
   Timer = setTimeout(() => {
-    document.getElementById('movie_player')
-      .classList.add('ytp-autohide')
+    MoviePlayer.classList.add('ytp-autohide')
     Timer = null
   }, HideDelay)
 }
