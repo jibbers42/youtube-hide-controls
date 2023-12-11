@@ -1,47 +1,86 @@
-const HideDelay = 1000
-const MoviePlayer = document.getElementById('movie_player')
+const hideDelay = 750
+let moviePlayer
+let videoStream
 
-let MouseInside = false
-let Timer
+let mouseInside = false
+let timer
 
-document.querySelector('video.video-stream')
-  .addEventListener('pause', () => {
+const observer = new MutationObserver((records, obs) => {
+  for (const record of records) {
+    for (const addedNode of record.addedNodes) {
+      if (moviePlayer == null
+        && addedNode.nodeType == Node.ELEMENT_NODE
+        && addedNode.id === 'movie_player') {
+        moviePlayer = addedNode
+      }
+
+      if (videoStream == null
+        && addedNode.nodeType == Node.ELEMENT_NODE
+        && addedNode.tagName.toLowerCase() === 'video'
+        && addedNode.classList.contains('video-stream')) {
+        videoStream = addedNode
+      }
+    }
+  }
+
+  if (moviePlayer != null && videoStream != null) {
+    obs.disconnect(); // Stop observing after the player is found
+    onMoviePlayerLoaded();
+  }
+});
+
+observer.observe(document, {
+  childList: true,
+  subtree: true
+});
+
+function onMoviePlayerLoaded() {
+  moviePlayer.focus()
+  moviePlayer.addEventListener("mouseover", onMouseOver)
+  moviePlayer.addEventListener("mouseout", onMouseOut)
+
+  videoStream.addEventListener('play', () => {
     showControls()
-    if (!MouseInside) {
+    if (!mouseInside) {
       hideControls()
     }
   })
 
-MoviePlayer.addEventListener("mouseover", onMouseOver)
-MoviePlayer.addEventListener("mouseout", onMouseOut)
+  videoStream.addEventListener('pause', () => {
+    showControls()
+    if (!mouseInside) {
+      hideControls()
+    }
+  })
+}
 
 function onMouseOver() {
-  MouseInside = true
+  mouseInside = true
   showControls()
 }
 
 function onMouseOut() {
-  MouseInside = false
+  mouseInside = false
   hideControls()
 }
 
 function showControls() {
-  if (Timer) {
-    clearTimeout(Timer)
-    Timer = null
+  if (timer) {
+    clearTimeout(timer)
+    timer = null
   }
 
-  MoviePlayer.classList.remove('ytp-autohide');
+  moviePlayer.classList.remove('ytp-autohide');
 }
 
 function hideControls() {
-  if (Timer) {
-    clearTimeout(Timer)
-    Timer = null
+  if (timer) {
+    clearTimeout(timer)
+    timer = null
   }
 
-  Timer = setTimeout(() => {
-    MoviePlayer.classList.add('ytp-autohide')
-    Timer = null
-  }, HideDelay)
+  timer = setTimeout(() => {
+    moviePlayer.classList.add('ytp-autohide')
+    timer = null
+  }, hideDelay)
 }
