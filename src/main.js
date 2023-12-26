@@ -5,22 +5,12 @@ let videoStream
 let mouseInside = false
 let timer
 
-const observer = new MutationObserver((records, obs) => {
-  for (const record of records) {
-    for (const addedNode of record.addedNodes) {
-      if (moviePlayer == null
-        && addedNode.nodeType == Node.ELEMENT_NODE
-        && addedNode.id === 'movie_player') {
-        moviePlayer = addedNode
-      }
-
-      if (videoStream == null
-        && addedNode.nodeType == Node.ELEMENT_NODE
-        && addedNode.tagName.toLowerCase() === 'video'
-        && addedNode.classList.contains('video-stream')) {
-        videoStream = addedNode
-      }
-    }
+const observer = new MutationObserver((_records, obs) => {
+  if (moviePlayer == null) {
+    moviePlayer = document.querySelector('#movie_player');
+  }
+  if (videoStream == null) {
+    videoStream = document.querySelector('.video-stream');
   }
 
   if (moviePlayer != null && videoStream != null) {
@@ -35,7 +25,6 @@ observer.observe(document, {
 });
 
 function onMoviePlayerLoaded() {
-  moviePlayer.focus()
   moviePlayer.addEventListener("mouseover", onMouseOver)
   moviePlayer.addEventListener("mouseout", onMouseOut)
 
@@ -52,6 +41,26 @@ function onMoviePlayerLoaded() {
       hideControls()
     }
   })
+
+  videoStream.focus()
+  const playButton = document.querySelector('button.ytp-play-button')
+  if (playButton != null) {
+    // In my browser, the play button doesn't work when pressing the space bar
+    // if the play button has focus. Not sure if it's an extension causing the
+    // issue or something else.
+    playButton.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.keyCode === 32) {
+        if (!videoStream.ended) {
+          e.preventDefault()
+          if (videoStream.paused) {
+            videoStream.play()
+          } else {
+            videoStream.pause()
+          }
+        }
+      }
+    });
+  }
 }
 
 function onMouseOver() {
